@@ -12,6 +12,21 @@ def get_users():
     json_users = list(map(lambda x: x.to_json(), users))
     return jsonify({"users": json_users})
 
+@app.route("/login", methods=["POST"])
+def login():
+    phone_number = request.json.get('phoneNumber')
+    password = request.json.get('password')
+    
+    if not phone_number or not password:
+        return jsonify({"message": "Phone number and password are required"}), 400
+
+    user = User.query.filter_by(contno=phone_number).first()
+
+    if user and user.pwd == password:
+        return jsonify({"message": "Login successful"}), 200
+    else:
+        return jsonify({"message": "Invalid phone number or password"}), 401
+
 
 @app.route("/create_user", methods=["POST"])
 def create_user():
