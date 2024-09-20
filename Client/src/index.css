@@ -1,0 +1,31 @@
+*{
+    background-image: url(./assets/bg.png);
+}
+
+
+#navb{
+    width: 100vw;
+    color: white;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+#navb ul{
+    list-style-type: none;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+
+}
+#navb ul li{
+    background: rgba(255, 255, 255, 0);
+    border-radius: 5px;
+    border-color: white;
+    border-width: 2px;
+    border-style: solid;
+}
+#navb button{
+    color: white;
+    border: none;
+    background-color:rgba(255, 255, 255, 0);
+    font-family: 'Times New Roman', Times, serif;
+    font-size: larger;
+}
