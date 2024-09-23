@@ -1,0 +1,3 @@
+ except jwt.ExpiredSignatureError:
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'JWTManager' object has no attribute 'ExpiredSignatureError' 

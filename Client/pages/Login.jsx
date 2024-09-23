@@ -1,18 +1,15 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // React Router v6
-import Navcomp from "../components/Navcomp";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const navigate = useNavigate(); // For redirection using React Router
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  const onClick = async () => {
-    const loginData = {
-      phoneNumber,
-      password,
-    };
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError(null);
 
     try {
       const response = await fetch("http://127.0.0.1:5000/login", {
@@ -20,47 +17,48 @@ function Login() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(loginData),
+        body: JSON.stringify({ phoneNumber, password }),
       });
 
-      if (response.status === 200) {
-        const data = await response.json();
-        navigate("/dashboard"); // Redirecting using React Router
-      } else if (response.status === 401) {
-        const data = await response.json();
-        setErrorMessage(data.message); // Invalid credentials
-      } else {
-        setErrorMessage("Something went wrong. Please try again.");
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Login failed: ${errorText}`);
       }
-    } catch (error) {
-      setErrorMessage("An error occurred during login: " + error.message);
+
+      const data = await response.json();
+      localStorage.setItem("token", data.access_token); // Store JWT token in local storage
+      navigate("/dashboard", { state: { uid: data.uid } }); // Pass user ID to Dashboard
+    } catch (err) {
+      setError(err.message);
     }
   };
 
   return (
-    <>
-      <Navcomp />
-      <div className="container" align="center">
-        <div className="logina">
-          <h3>Login</h3>
-          <p>Phone Number</p>
+    <div>
+      <h1>Login</h1>
+      <form onSubmit={handleLogin}>
+        <div>
+          <label>Phone Number:</label>
           <input
             type="text"
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
+            required
           />
-          <p>Password</p>
+        </div>
+        <div>
+          <label>Password:</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-          />{" "}
-          <br />
-          <button onClick={onClick}>Enter</button>
-          {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
+            required
+          />
         </div>
-      </div>
-    </>
+        {error && <div style={{ color: "red" }}>{error}</div>}
+        <button type="submit">Login</button>
+      </form>
+    </div>
   );
 }
 
