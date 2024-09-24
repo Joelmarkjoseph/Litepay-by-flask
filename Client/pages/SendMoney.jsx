@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // For navigation after success
 
 function SendMoney() {
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -6,6 +7,7 @@ function SendMoney() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate(); // Navigate to a success page or dashboard
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -13,38 +15,48 @@ function SendMoney() {
       // Open password popup
       setIsModalOpen(true);
     } else {
-      setMessage("Please enter a valid phone number and amount");
+      setMessage("Please enter a valid phone number and amount.");
     }
   };
 
   const handleTransfer = async () => {
-    const token = localStorage.getItem("token"); // Get JWT token from local storage
+    const token = localStorage.getItem("token"); // Retrieve the JWT token
+    const response = await fetch("http://127.0.0.1:5000/api/send-money", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // Include the JWT token
+      },
+      body: JSON.stringify({
+        phoneNumber,
+        amount,
+        password, // Password entered for verification
+      }),
+    });
 
-    try {
-      const response = await fetch("http://127.0.0.1:5000/api/send-money", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Include token in the Authorization header
-        },
-        body: JSON.stringify({
-          phoneNumber,
-          amount,
-          password,
-        }),
-      });
+    const data = await response.json();
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage(`Success: ${data.message}`);
-        setIsModalOpen(false);
-      } else {
-        setMessage(`Error: ${data.message}`);
-      }
-    } catch (error) {
-      setMessage("An error occurred. Please try again.");
+    if (!response.ok) {
+      setMessage(`Error: ${data.message}`);
+    } else {
+      setMessage("Money sent successfully!");
+      await sendEmail(token); // Call the email sending function
+      setIsModalOpen(false); // Close the modal after success
+      navigate("/success"); // Redirect to a success page
     }
+  };
+
+  const sendEmail = async (token) => {
+    await fetch("http://127.0.0.1:5000/send-mail", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        // Add required email content if necessary
+      }),
+    });
   };
 
   return (

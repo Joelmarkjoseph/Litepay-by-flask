@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 from functools import wraps
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
+
+
 app.config['JWT_SECRET_KEY'] = os.urandom(24)  # Change this to a random secret key
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600
 jwt = JWTManager(app)
@@ -67,7 +69,7 @@ def login():
 
     if user and user.pwd == password:
         # Create a JWT token for the user using 'create_access_token'
-        access_token = create_access_token(identity=user.uid)
+        access_token = create_access_token(identity=user.uid) 
         return jsonify({"access_token": access_token, "uid": user.uid, "name": user.first_name}), 200
     else:
         return jsonify({"message": "Invalid phone number or password"}), 401
@@ -79,11 +81,11 @@ def send_money():
     data = request.json
     phone_number = data.get("phoneNumber")
     amount = data.get("amount")
-    password = data.get("password")
+    password = data.get("password") 
 
     # Get the current user's identity from the JWT token
     current_user_contno = get_jwt_identity()
-    sender = User.query.filter_by(contno=current_user_contno).first()
+    sender = User.query.filter_by(uid=current_user_contno).first()
 
     if not sender or sender.pwd != password:
         return jsonify({"message": "Invalid password"}), 401
@@ -158,6 +160,21 @@ def delete_user(user_id):
         return jsonify({"message": "User deleted successfully"}), 200
     except Exception as e:
         return jsonify({"message": str(e)}), 500
+
+from flask_mail import Mail, Message
+from config import mail
+@app.route("/send-mail")
+def send_mail():
+    msg = Message(
+        'Hello from Flask!',
+        sender='joemarkjoseph2@gmail.com',
+        recipients=['joelmarkjoseph2004@gmail.com']
+    )
+    msg.body = 'This is a test email sent from a Flask app!'
+    mail.send(msg) 
+    return jsonify({"message": "Email sent successfully!"}), 200
+
+
 
 if __name__ == '__main__':
     with app.app_context():
